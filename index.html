@@ -1,0 +1,3272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Khan Academy Math 生词学习卡 — English for Planes</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --accent-geo: #059669;
+    --accent-geo-light: #d1fae5;
+    --tag-bg: #f1f5f9;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 40px;
+  }
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #fff;
+    padding: 28px 20px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  header p { font-size: 0.9rem; color: #94a3b8; max-width: 480px; margin: 0 auto; }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    background: rgba(248,250,252,0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 50;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+  }
+  .toolbar-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .tabs { display: flex; gap: 8px; }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .tab-btn.active.arithmetic { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .tab-btn.active.geometry { background: var(--accent-geo); color: #fff; border-color: var(--accent-geo); }
+
+  .view-toggle { display: flex; gap: 6px; }
+  .view-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .view-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  .course-panel { display: none; }
+  .course-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .stage { max-width: 1100px; margin: 0 auto 28px; padding: 0 20px; }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    margin-bottom: 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  .stage-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+  .geometry .stage-dot { background: var(--accent-geo); }
+  .stage-title { font-weight: 700; font-size: 1.1rem; }
+  .stage-sub { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-left: 6px; }
+
+  /* Card view */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .word-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .word-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: transparent; }
+  .word-card.expanded { box-shadow: var(--shadow-lg); border-color: var(--card-accent, var(--primary)); }
+  .word-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--primary));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .word-card:hover::before, .word-card.expanded::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .word-main { font-size: 1.25rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .word-phonetic { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; font-family: "Segoe UI", Roboto, sans-serif; }
+  .btn-speak {
+    width: 36px; height: 36px;
+    border-radius: 50%; border: none;
+    background: var(--card-accent-light, var(--primary-light));
+    color: var(--card-accent, var(--primary));
+    font-size: 1rem; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: transform 0.15s;
+  }
+  .btn-speak:hover { transform: scale(1.1); }
+  .btn-speak:active { transform: scale(0.95); }
+  .btn-speak.speaking { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .tag {
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--tag-bg); color: var(--text-secondary); white-space: nowrap;
+  }
+  .tag.grade { background: #fef3c7; color: #92400e; }
+  .tag.course-arith { background: #dbeafe; color: #1e40af; }
+  .tag.course-geo { background: #d1fae5; color: #065f46; }
+
+  .phrase-text { font-style: italic; color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 6px; }
+  .meaning-text { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+
+  .card-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+  .word-card.expanded .card-details {
+    max-height: 600px;
+    opacity: 1;
+    margin-top: 10px;
+  }
+  .section-title {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-secondary); margin: 10px 0 3px;
+  }
+  .section-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+  .aviation-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border-left: 3px solid var(--primary);
+    padding: 8px 10px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: #1e3a5f;
+  }
+  .geometry .aviation-box {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border-left-color: var(--accent-geo);
+    color: #064e3b;
+  }
+  .aviation-box strong {
+    display: block; font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 2px; opacity: 0.8;
+  }
+  .expand-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+  .word-card.expanded .expand-hint { display: none; }
+
+  /* List view */
+  .list-table {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .list-header {
+    display: grid;
+    grid-template-columns: minmax(140px, 1.2fr) 90px minmax(160px, 1.5fr) minmax(120px, 1fr) 90px 50px;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .list-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 1.2fr) 90px minmax(160px, 1.5fr) minmax(120px, 1fr) 90px 50px;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .list-row:hover { background: #f8fafc; }
+  .list-row.expanded { background: #f8fafc; }
+  .list-row:last-child { border-bottom: none; }
+
+  .list-word { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .list-phonetic { font-size: 0.78rem; color: var(--text-secondary); font-family: "Segoe UI", Roboto, sans-serif; }
+  .list-phrase { font-size: 0.82rem; color: var(--text-secondary); font-style: italic; }
+  .list-meaning { font-size: 0.85rem; color: var(--text); }
+  .list-grade { font-size: 0.72rem; }
+  .list-speak {
+    width: 32px; height: 32px;
+    border-radius: 50%; border: none;
+    background: var(--card-accent-light, var(--primary-light));
+    color: var(--card-accent, var(--primary));
+    font-size: 0.9rem; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .list-speak.speaking { animation: pulse 1s infinite; }
+
+  .list-details {
+    grid-column: 1 / -1;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+    padding: 0 14px;
+  }
+  .list-row.expanded .list-details {
+    max-height: 400px;
+    opacity: 1;
+    padding: 10px 14px 14px;
+    border-top: 1px dashed var(--border);
+    margin-top: 8px;
+  }
+
+  .view-list .card-grid { display: none; }
+  .view-list .list-table { display: block; }
+  .view-card .card-grid { display: grid; }
+  .view-card .list-table { display: none; }
+
+  @media (max-width: 767px) {
+    .list-header { display: none; }
+    .list-row {
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      padding: 12px 14px;
+    }
+    .list-row .list-phonetic,
+    .list-row .list-phrase,
+    .list-row .list-meaning,
+    .list-row .list-grade { grid-column: 1 / 2; }
+    .list-row .list-speak { grid-column: 2 / 3; grid-row: 1 / 3; align-self: start; }
+    .list-word { font-size: 1.05rem; }
+    .toolbar-inner { justify-content: center; }
+  }
+  @media (min-width: 768px) {
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    header { padding: 32px 20px 28px; }
+    header h1 { font-size: 1.8rem; }
+  }
+
+  footer { text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-secondary); }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ Khan Academy Math 生词学习卡</h1>
+  <p>消除英语数学障碍 · 直通航模实践 · 电脑与 iPad 随时学</p>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="tabs">
+      <button class="tab-btn arithmetic active" onclick="switchTab('arithmetic')">🔢 Arithmetic <span style="font-weight:400;opacity:.7">基础算术</span></button>
+      <button class="tab-btn geometry" onclick="switchTab('geometry')">📐 Geometry <span style="font-weight:400;opacity:.7">基础几何</span></button>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-card" onclick="setView('card')">🎴 卡牌</button>
+      <button class="view-btn" id="btn-list" onclick="setView('list')">📋 列表</button>
+    </div>
+  </div>
+</div>
+
+<div id="panels-container">
+  <div class="course-panel arithmetic active view-card" id="panel-arithmetic">
+    <div class="view-card-content">
+      <div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第一阶段：整数与四则运算</span>
+      <span class="stage-sub">Whole Numbers &amp; Operations</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">whole number</div>
+      <div class="word-phonetic">/hoʊl ˈnʌmbər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "whole number", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 一年级</span>
+  </div>
+  <div class="phrase-text">a set of whole numbers</div>
+  <div class="meaning-text">整数（不含分数和小数的非负计数数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">介绍数的基本分类，是理解所有运算的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      统计航模零件数量时使用，如&quot;需要6颗 whole number 个螺丝&quot;，帮助孩子建立基础计数意识。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">addition</div>
+      <div class="word-phonetic">/əˈdɪʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "addition", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 一年级</span>
+  </div>
+  <div class="phrase-text">perform an addition</div>
+  <div class="meaning-text">加法（把两个或多个数合并成一个总数的运算）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四则运算中最先接触的运算，对应符号 &quot;+&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算航模总重量：机翼重量 + 机身重量 = 总重量（addition）。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">subtraction</div>
+      <div class="word-phonetic">/səbˈtrækʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "subtraction", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 一年级</span>
+  </div>
+  <div class="phrase-text">do subtraction with borrowing</div>
+  <div class="meaning-text">减法（已知两个数的和与其中一个加数，求另一个加数的运算）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四则运算之一，与加法互为逆运算。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算减重效果：原重量 − 去掉的配重 = 新重量（subtraction）。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">regrouping / borrowing</div>
+      <div class="word-phonetic">/riːˈɡruːpɪŋ/ /ˈbɒrəʊɪŋ/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "regrouping / borrowing", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">borrow from the tens place</div>
+  <div class="meaning-text">进位 / 借位（加减法中不同数位之间的重新组合）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">多位数加减法的核心技巧，如个位不够减向十位借1当10。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      复杂尺寸链计算时，不同单位（毫米/厘米）之间的换算常涉及 regrouping。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">estimate / estimation</div>
+      <div class="word-phonetic">/ˈestɪmeɪt/ /ˌestɪˈmeɪʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "estimate / estimation", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">make a rough estimate</div>
+  <div class="meaning-text">估算（不追求精确值，快速判断数量级的大致计算）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">工程思维入门，先估算再精算，培养数感。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      快速估算航模重心位置或飞行时间，比赛前做 estimation 判断电池是否够用。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">multiplication</div>
+      <div class="word-phonetic">/ˌmʌltɪplɪˈkeɪʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "multiplication", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">learn the multiplication table</div>
+  <div class="meaning-text">乘法（求几个相同加数和的简便运算）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">可理解为重复的加法，对应符号 &quot;×&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机翼面积：翼展 × 平均弦宽 = 面积（multiplication），直接影响升力估算。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">multiply</div>
+      <div class="word-phonetic">/ˈmʌltɪplaɪ/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "multiply", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">multiply the length by the width</div>
+  <div class="meaning-text">乘（进行乘法运算的动作）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">乘法运算的动词形式，常见于应用题中。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      按比例放大图纸时，将每个尺寸 multiply 缩放倍数，得到实际加工尺寸。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">product</div>
+      <div class="word-phonetic">/ˈprɒdʌkt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "product", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">the product of 3 and 4</div>
+  <div class="meaning-text">积（乘法运算的结果）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">乘法四要素之一：因数 × 因数 = 积。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      翼展与弦宽的 product 决定了机翼的投影面积，是升力计算的基础。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">division</div>
+      <div class="word-phonetic">/dɪˈvɪʒən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "division", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">long division method</div>
+  <div class="meaning-text">除法（已知两个因数的积与其中一个因数，求另一个因数的运算）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与乘法互为逆运算，对应符号 &quot;÷&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将整段机翼均匀分成若干肋板：总长度 ÷ 肋板数量 = 每段间距（division）。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">divide</div>
+      <div class="word-phonetic">/dɪˈvaɪd/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "divide", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">divide into equal parts</div>
+  <div class="meaning-text">除（进行除法运算的动作）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法运算的动词形式，常见于等分问题。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      制作对称双翼时，将翼展 divide by 2，确保左右两侧完全等长。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">quotient</div>
+      <div class="word-phonetic">/ˈkwəʊʃənt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "quotient", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">find the quotient</div>
+  <div class="meaning-text">商（除法运算的结果）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法三要素之一：被除数 ÷ 除数 = 商。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      用机翼面积除以翼展得到的 quotient 就是平均弦长，是翼型设计的关键参数。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">remainder</div>
+      <div class="word-phonetic">/rɪˈmeɪndər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "remainder", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 二年级</span>
+  </div>
+  <div class="phrase-text">a remainder of 2</div>
+  <div class="meaning-text">余数（整数除法中被除数未被除尽的部分）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法运算后剩下的、不能再整分的部分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将1米长的碳杆按9等分切割后，remainder 是剩余的废料长度，用于估算材料损耗。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">factor</div>
+      <div class="word-phonetic">/ˈfæktər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "factor", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">common factor of 12 and 18</div>
+  <div class="meaning-text">因数 / 因子（能整除某数的整数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">理解数的组成结构，是约分和通分的基础。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      设计等距肋板时，肋板数量必须是翼展长度的 factor，才能确保等分无 remainder。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">multiple</div>
+      <div class="word-phonetic">/ˈmʌltɪpl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "multiple", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">a multiple of 5</div>
+  <div class="meaning-text">倍数（某数乘以整数所得的积）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与因数成对出现，用于找规律和通分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      若机翼按50mm间隔布置肋板，则所有肋板位置都是50的 multiple，便于快速定位。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">place value</div>
+      <div class="word-phonetic">/pleɪs ˈvæljuː/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "place value", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 一年级</span>
+  </div>
+  <div class="phrase-text">understand the place value system</div>
+  <div class="meaning-text">位值 / 数位（数字在不同位置上代表的不同大小）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数字中每一位所代表的价值，如十位上的3代表30。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      读取精密电机参数（如KV值2300）时，每一位的 place value 决定其精确量级，差一位则动力完全不同。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第二阶段：分数</span>
+      <span class="stage-sub">Fractions</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">fraction</div>
+      <div class="word-phonetic">/ˈfrækʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "fraction", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">a fraction of the whole</div>
+  <div class="meaning-text">分数（表示一个整体被平均分成若干份后，取其中一份或几份的数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数系的第一次重大扩展，从整数进入部分与整体的关系。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模比例尺的本质就是 fraction：1/48 表示模型是真实飞机的 1/48 大小，手搓航模必须精通比例换算。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">numerator</div>
+      <div class="word-phonetic">/ˈnjuːməreɪtər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "numerator", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">the numerator of a fraction</div>
+  <div class="meaning-text">分子（分数线上方表示取了多少份的数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数线以上的部分，代表&quot;取了几份&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在翼型厚度比 3/12 中，numerator 3 表示翼型最大厚度是弦长的3份，直接影响升阻特性。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">denominator</div>
+      <div class="word-phonetic">/dɪˈnɒmɪneɪtər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "denominator", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">the denominator shows the total parts</div>
+  <div class="meaning-text">分母（分数线下方表示整体被平均分成多少份的数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数线以下的部分，代表&quot;平均分成几份&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      比例尺 1/48 中，denominator 48 表示真实飞机被等分为48段，模型只占其中1段长度。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">proper fraction</div>
+      <div class="word-phonetic">/ˈprɒpər ˈfrækʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "proper fraction", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">a proper fraction less than 1</div>
+  <div class="meaning-text">真分数（分子小于分母，值小于1的分数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数分类的基础概念，值始终小于1。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      绝大多数航模比例尺（如1/48、1/72）都是 proper fraction，因为模型一定比真机小。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">improper fraction</div>
+      <div class="word-phonetic">/ɪmˈprɒpər ˈfrækʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "improper fraction", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">convert to an improper fraction</div>
+  <div class="meaning-text">假分数（分子大于或等于分母，值大于或等于1的分数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与带分数密切相关，是分数运算中的常用形式。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将带分数翼展 &quot;2又1/2米&quot; 转换为 improper fraction（5/2米），便于CAD软件直接输入计算。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">mixed number</div>
+      <div class="word-phonetic">/mɪkst ˈnʌmbər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "mixed number", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">write as a mixed number</div>
+  <div class="meaning-text">带分数（由整数部分和真分数部分组成的数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">日常生活中最常用的分数表示法，如&quot;2又1/2&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼翼展常为 mixed number，如1¾米，比写成7/4米更直观，便于在图纸上标注。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">equivalent</div>
+      <div class="word-phonetic">/ɪˈkwɪvələnt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "equivalent", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">equivalent fractions</div>
+  <div class="meaning-text">等价的 / 等值的（大小相等但形式不同）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数基本性质的体现，是通分和约分的理论依据。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在航模图纸上，1/2 和 2/4 是 equivalent 的比例，放大缩小时需灵活转换以保持尺寸准确。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">simplify / reducing fractions</div>
+      <div class="word-phonetic">/ˈsɪmplɪfaɪ/ /rɪˈdjuːsɪŋ/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "simplify / reducing fractions", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">simplify the fraction to lowest terms</div>
+  <div class="meaning-text">约分 / 化简分数（把分数化为最简形式）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">通过除以公因数，使分子分母互质，得到最简分数。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将比例尺 4/48 simplify 为 1/12，便于工人快速理解并下料，减少图纸误读。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">common denominator</div>
+      <div class="word-phonetic">/ˈkɒmən dɪˈnɒmɪneɪtər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "common denominator", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">find the least common denominator</div>
+  <div class="meaning-text">公分母（几个分数共同的分母，通分的基础）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">异分母分数相加减时，必须先通分成相同的分母。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      拼接不同比例的设计图时，需要找到 common denominator，使所有零件尺寸统一在同一比例下计算。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第三阶段：小数与负数</span>
+      <span class="stage-sub">Decimals &amp; Negative Numbers</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">decimal</div>
+      <div class="word-phonetic">/ˈdesɪml/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "decimal", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级/四年级</span>
+  </div>
+  <div class="phrase-text">a decimal number</div>
+  <div class="meaning-text">小数（用十进制表示的非整数，如0.5、3.14）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">另一种表示非整数的形式，与分数可以互相转换。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      电机直径常标注为 decimal，如&quot;8.5mm&quot;，比分数 17/2 mm 更便于工厂加工和测量。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">decimal point</div>
+      <div class="word-phonetic">/ˈdesɪml pɔɪnt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "decimal point", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级/四年级</span>
+  </div>
+  <div class="phrase-text">move the decimal point two places</div>
+  <div class="meaning-text">小数点（分隔整数部分与小数部分的符号）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数的核心标志，位置移动会改变数值大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      读螺旋桨参数 9×4.7 时，decimal point 的位置决定桨叶螺距是4.7英寸还是47英寸，差之毫厘失之千里。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">tenths</div>
+      <div class="word-phonetic">/ˈtɛnθs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "tenths", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">the tenths place</div>
+  <div class="meaning-text">十分位（小数点后第一位，计数单位0.1）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数点后第一位的位值，对应分数的1/10。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      KT板厚度常为 tenths 级别，如0.3cm（3 tenths），直接决定机翼的强度和重量。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">hundredths</div>
+      <div class="word-phonetic">/ˈhʌndrədθs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "hundredths", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">two hundredths</div>
+  <div class="meaning-text">百分位（小数点后第二位，计数单位0.01）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数点后第二位的位值，对应分数的1/100。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      精密零件公差常精确到 hundredths 毫米，如轴径8.05mm，确保电机轴与桨夹严丝合缝。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">convert</div>
+      <div class="word-phonetic">/kənˈvɜːt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "convert", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">convert a fraction to a decimal</div>
+  <div class="meaning-text">转换（在不同数制或形式之间进行变化）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数、小数、百分数之间的互化，是灵活计算的关键。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      需频繁 convert 英制（英寸）与公制（毫米）：将1/4英寸转换为0.25英寸，再乘以25.4得到6.35mm。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">negative number</div>
+      <div class="word-phonetic">/ˈneɡətɪv ˈnʌmbər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "negative number", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 六年级/七年级</span>
+  </div>
+  <div class="phrase-text">a negative temperature</div>
+  <div class="meaning-text">负数（小于0的数，数轴上在原点左侧）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数系的第二次扩展，表示相反意义的量。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      遥控器舵量设置中，negative number 表示舵机反向偏转；温度低于0℃时电池性能下降也涉及负数。
+    </div>
+  </div>
+</div><div class="word-card arithmetic" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">absolute value</div>
+      <div class="word-phonetic">/ˈæbsəluːt ˈvæljuː/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "absolute value", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-arith">Arithmetic</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">the absolute value of −5 is 5</div>
+  <div class="meaning-text">绝对值（一个数在数轴上与原点的距离，非负）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">不看正负号，只看距离，是后续方程和函数的基础。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      评估飞机偏离航线距离时只需关注 absolute value（偏离了多少米），而不论是偏左（负）还是偏右（正）。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+    </div>
+    <div class="view-list-content" style="display:none">
+      <div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第一阶段：整数与四则运算</span>
+      <span class="stage-sub">Whole Numbers &amp; Operations</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">whole number</div>
+  <div class="list-phonetic">/hoʊl ˈnʌmbər/</div>
+  <div class="list-phrase">a set of whole numbers</div>
+  <div class="list-meaning">整数（不含分数和小数的非负计数数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 一年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "whole number", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">介绍数的基本分类，是理解所有运算的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      统计航模零件数量时使用，如&quot;需要6颗 whole number 个螺丝&quot;，帮助孩子建立基础计数意识。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">addition</div>
+  <div class="list-phonetic">/əˈdɪʃən/</div>
+  <div class="list-phrase">perform an addition</div>
+  <div class="list-meaning">加法（把两个或多个数合并成一个总数的运算）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 一年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "addition", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四则运算中最先接触的运算，对应符号 &quot;+&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算航模总重量：机翼重量 + 机身重量 = 总重量（addition）。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">subtraction</div>
+  <div class="list-phonetic">/səbˈtrækʃən/</div>
+  <div class="list-phrase">do subtraction with borrowing</div>
+  <div class="list-meaning">减法（已知两个数的和与其中一个加数，求另一个加数的运算）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 一年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "subtraction", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四则运算之一，与加法互为逆运算。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算减重效果：原重量 − 去掉的配重 = 新重量（subtraction）。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">regrouping / borrowing</div>
+  <div class="list-phonetic">/riːˈɡruːpɪŋ/ /ˈbɒrəʊɪŋ/</div>
+  <div class="list-phrase">borrow from the tens place</div>
+  <div class="list-meaning">进位 / 借位（加减法中不同数位之间的重新组合）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "regrouping / borrowing", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">多位数加减法的核心技巧，如个位不够减向十位借1当10。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      复杂尺寸链计算时，不同单位（毫米/厘米）之间的换算常涉及 regrouping。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">estimate / estimation</div>
+  <div class="list-phonetic">/ˈestɪmeɪt/ /ˌestɪˈmeɪʃən/</div>
+  <div class="list-phrase">make a rough estimate</div>
+  <div class="list-meaning">估算（不追求精确值，快速判断数量级的大致计算）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "estimate / estimation", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">工程思维入门，先估算再精算，培养数感。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      快速估算航模重心位置或飞行时间，比赛前做 estimation 判断电池是否够用。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">multiplication</div>
+  <div class="list-phonetic">/ˌmʌltɪplɪˈkeɪʃən/</div>
+  <div class="list-phrase">learn the multiplication table</div>
+  <div class="list-meaning">乘法（求几个相同加数和的简便运算）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "multiplication", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">可理解为重复的加法，对应符号 &quot;×&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机翼面积：翼展 × 平均弦宽 = 面积（multiplication），直接影响升力估算。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">multiply</div>
+  <div class="list-phonetic">/ˈmʌltɪplaɪ/</div>
+  <div class="list-phrase">multiply the length by the width</div>
+  <div class="list-meaning">乘（进行乘法运算的动作）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "multiply", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">乘法运算的动词形式，常见于应用题中。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      按比例放大图纸时，将每个尺寸 multiply 缩放倍数，得到实际加工尺寸。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">product</div>
+  <div class="list-phonetic">/ˈprɒdʌkt/</div>
+  <div class="list-phrase">the product of 3 and 4</div>
+  <div class="list-meaning">积（乘法运算的结果）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "product", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">乘法四要素之一：因数 × 因数 = 积。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      翼展与弦宽的 product 决定了机翼的投影面积，是升力计算的基础。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">division</div>
+  <div class="list-phonetic">/dɪˈvɪʒən/</div>
+  <div class="list-phrase">long division method</div>
+  <div class="list-meaning">除法（已知两个因数的积与其中一个因数，求另一个因数的运算）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "division", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与乘法互为逆运算，对应符号 &quot;÷&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将整段机翼均匀分成若干肋板：总长度 ÷ 肋板数量 = 每段间距（division）。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">divide</div>
+  <div class="list-phonetic">/dɪˈvaɪd/</div>
+  <div class="list-phrase">divide into equal parts</div>
+  <div class="list-meaning">除（进行除法运算的动作）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "divide", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法运算的动词形式，常见于等分问题。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      制作对称双翼时，将翼展 divide by 2，确保左右两侧完全等长。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">quotient</div>
+  <div class="list-phonetic">/ˈkwəʊʃənt/</div>
+  <div class="list-phrase">find the quotient</div>
+  <div class="list-meaning">商（除法运算的结果）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "quotient", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法三要素之一：被除数 ÷ 除数 = 商。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      用机翼面积除以翼展得到的 quotient 就是平均弦长，是翼型设计的关键参数。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">remainder</div>
+  <div class="list-phonetic">/rɪˈmeɪndər/</div>
+  <div class="list-phrase">a remainder of 2</div>
+  <div class="list-meaning">余数（整数除法中被除数未被除尽的部分）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 二年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "remainder", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">除法运算后剩下的、不能再整分的部分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将1米长的碳杆按9等分切割后，remainder 是剩余的废料长度，用于估算材料损耗。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">factor</div>
+  <div class="list-phonetic">/ˈfæktər/</div>
+  <div class="list-phrase">common factor of 12 and 18</div>
+  <div class="list-meaning">因数 / 因子（能整除某数的整数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "factor", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">理解数的组成结构，是约分和通分的基础。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      设计等距肋板时，肋板数量必须是翼展长度的 factor，才能确保等分无 remainder。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">multiple</div>
+  <div class="list-phonetic">/ˈmʌltɪpl/</div>
+  <div class="list-phrase">a multiple of 5</div>
+  <div class="list-meaning">倍数（某数乘以整数所得的积）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "multiple", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与因数成对出现，用于找规律和通分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      若机翼按50mm间隔布置肋板，则所有肋板位置都是50的 multiple，便于快速定位。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">place value</div>
+  <div class="list-phonetic">/pleɪs ˈvæljuː/</div>
+  <div class="list-phrase">understand the place value system</div>
+  <div class="list-meaning">位值 / 数位（数字在不同位置上代表的不同大小）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 一年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "place value", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数字中每一位所代表的价值，如十位上的3代表30。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      读取精密电机参数（如KV值2300）时，每一位的 place value 决定其精确量级，差一位则动力完全不同。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第二阶段：分数</span>
+      <span class="stage-sub">Fractions</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">fraction</div>
+  <div class="list-phonetic">/ˈfrækʃən/</div>
+  <div class="list-phrase">a fraction of the whole</div>
+  <div class="list-meaning">分数（表示一个整体被平均分成若干份后，取其中一份或几份的数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "fraction", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数系的第一次重大扩展，从整数进入部分与整体的关系。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模比例尺的本质就是 fraction：1/48 表示模型是真实飞机的 1/48 大小，手搓航模必须精通比例换算。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">numerator</div>
+  <div class="list-phonetic">/ˈnjuːməreɪtər/</div>
+  <div class="list-phrase">the numerator of a fraction</div>
+  <div class="list-meaning">分子（分数线上方表示取了多少份的数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "numerator", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数线以上的部分，代表&quot;取了几份&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在翼型厚度比 3/12 中，numerator 3 表示翼型最大厚度是弦长的3份，直接影响升阻特性。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">denominator</div>
+  <div class="list-phonetic">/dɪˈnɒmɪneɪtər/</div>
+  <div class="list-phrase">the denominator shows the total parts</div>
+  <div class="list-meaning">分母（分数线下方表示整体被平均分成多少份的数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "denominator", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数线以下的部分，代表&quot;平均分成几份&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      比例尺 1/48 中，denominator 48 表示真实飞机被等分为48段，模型只占其中1段长度。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">proper fraction</div>
+  <div class="list-phonetic">/ˈprɒpər ˈfrækʃən/</div>
+  <div class="list-phrase">a proper fraction less than 1</div>
+  <div class="list-meaning">真分数（分子小于分母，值小于1的分数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "proper fraction", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数分类的基础概念，值始终小于1。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      绝大多数航模比例尺（如1/48、1/72）都是 proper fraction，因为模型一定比真机小。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">improper fraction</div>
+  <div class="list-phonetic">/ɪmˈprɒpər ˈfrækʃən/</div>
+  <div class="list-phrase">convert to an improper fraction</div>
+  <div class="list-meaning">假分数（分子大于或等于分母，值大于或等于1的分数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "improper fraction", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">与带分数密切相关，是分数运算中的常用形式。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将带分数翼展 &quot;2又1/2米&quot; 转换为 improper fraction（5/2米），便于CAD软件直接输入计算。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">mixed number</div>
+  <div class="list-phonetic">/mɪkst ˈnʌmbər/</div>
+  <div class="list-phrase">write as a mixed number</div>
+  <div class="list-meaning">带分数（由整数部分和真分数部分组成的数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "mixed number", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">日常生活中最常用的分数表示法，如&quot;2又1/2&quot;。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼翼展常为 mixed number，如1¾米，比写成7/4米更直观，便于在图纸上标注。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">equivalent</div>
+  <div class="list-phonetic">/ɪˈkwɪvələnt/</div>
+  <div class="list-phrase">equivalent fractions</div>
+  <div class="list-meaning">等价的 / 等值的（大小相等但形式不同）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "equivalent", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数基本性质的体现，是通分和约分的理论依据。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在航模图纸上，1/2 和 2/4 是 equivalent 的比例，放大缩小时需灵活转换以保持尺寸准确。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">simplify / reducing fractions</div>
+  <div class="list-phonetic">/ˈsɪmplɪfaɪ/ /rɪˈdjuːsɪŋ/</div>
+  <div class="list-phrase">simplify the fraction to lowest terms</div>
+  <div class="list-meaning">约分 / 化简分数（把分数化为最简形式）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "simplify / reducing fractions", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">通过除以公因数，使分子分母互质，得到最简分数。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      将比例尺 4/48 simplify 为 1/12，便于工人快速理解并下料，减少图纸误读。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">common denominator</div>
+  <div class="list-phonetic">/ˈkɒmən dɪˈnɒmɪneɪtər/</div>
+  <div class="list-phrase">find the least common denominator</div>
+  <div class="list-meaning">公分母（几个分数共同的分母，通分的基础）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "common denominator", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">异分母分数相加减时，必须先通分成相同的分母。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      拼接不同比例的设计图时，需要找到 common denominator，使所有零件尺寸统一在同一比例下计算。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage arithmetic">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第三阶段：小数与负数</span>
+      <span class="stage-sub">Decimals &amp; Negative Numbers</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">decimal</div>
+  <div class="list-phonetic">/ˈdesɪml/</div>
+  <div class="list-phrase">a decimal number</div>
+  <div class="list-meaning">小数（用十进制表示的非整数，如0.5、3.14）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级/四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "decimal", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">另一种表示非整数的形式，与分数可以互相转换。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      电机直径常标注为 decimal，如&quot;8.5mm&quot;，比分数 17/2 mm 更便于工厂加工和测量。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">decimal point</div>
+  <div class="list-phonetic">/ˈdesɪml pɔɪnt/</div>
+  <div class="list-phrase">move the decimal point two places</div>
+  <div class="list-meaning">小数点（分隔整数部分与小数部分的符号）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级/四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "decimal point", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数的核心标志，位置移动会改变数值大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      读螺旋桨参数 9×4.7 时，decimal point 的位置决定桨叶螺距是4.7英寸还是47英寸，差之毫厘失之千里。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">tenths</div>
+  <div class="list-phonetic">/ˈtɛnθs/</div>
+  <div class="list-phrase">the tenths place</div>
+  <div class="list-meaning">十分位（小数点后第一位，计数单位0.1）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "tenths", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数点后第一位的位值，对应分数的1/10。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      KT板厚度常为 tenths 级别，如0.3cm（3 tenths），直接决定机翼的强度和重量。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">hundredths</div>
+  <div class="list-phonetic">/ˈhʌndrədθs/</div>
+  <div class="list-phrase">two hundredths</div>
+  <div class="list-meaning">百分位（小数点后第二位，计数单位0.01）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "hundredths", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小数点后第二位的位值，对应分数的1/100。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      精密零件公差常精确到 hundredths 毫米，如轴径8.05mm，确保电机轴与桨夹严丝合缝。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">convert</div>
+  <div class="list-phonetic">/kənˈvɜːt/</div>
+  <div class="list-phrase">convert a fraction to a decimal</div>
+  <div class="list-meaning">转换（在不同数制或形式之间进行变化）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "convert", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">分数、小数、百分数之间的互化，是灵活计算的关键。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      需频繁 convert 英制（英寸）与公制（毫米）：将1/4英寸转换为0.25英寸，再乘以25.4得到6.35mm。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">negative number</div>
+  <div class="list-phonetic">/ˈneɡətɪv ˈnʌmbər/</div>
+  <div class="list-phrase">a negative temperature</div>
+  <div class="list-meaning">负数（小于0的数，数轴上在原点左侧）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 六年级/七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "negative number", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">数系的第二次扩展，表示相反意义的量。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      遥控器舵量设置中，negative number 表示舵机反向偏转；温度低于0℃时电池性能下降也涉及负数。
+    </div>
+  </div>
+</div><div class="list-row arithmetic" onclick="toggleListRow(this)">
+  <div class="list-word">absolute value</div>
+  <div class="list-phonetic">/ˈæbsəluːt ˈvæljuː/</div>
+  <div class="list-phrase">the absolute value of −5 is 5</div>
+  <div class="list-meaning">绝对值（一个数在数轴上与原点的距离，非负）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "absolute value", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">不看正负号，只看距离，是后续方程和函数的基础。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      评估飞机偏离航线距离时只需关注 absolute value（偏离了多少米），而不论是偏左（负）还是偏右（正）。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+    </div>
+  </div>
+  <div class="course-panel geometry view-card" id="panel-geometry">
+    <div class="view-card-content">
+      <div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第一阶段：几何基础元素</span>
+      <span class="stage-sub">Foundations</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">point</div>
+      <div class="word-phonetic">/pɔɪnt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "point", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a fixed point on the plane</div>
+  <div class="meaning-text">点（几何中最基本的元素，没有大小，只有位置）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">没有大小的精确位置，是所有几何图形的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在CAD图纸上，每一个 point 代表一个关键定位点，如机翼前缘与机身的连接点。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">line</div>
+      <div class="word-phonetic">/laɪn/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "line", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">draw a straight line</div>
+  <div class="meaning-text">直线（向两端无限延伸的、没有宽度和厚度的一维图形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">无限延伸的点的集合，没有端点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼的理论基准线（如1/4弦线）是一条无限延伸的 line，用于分析整机的气动特性。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">line segment</div>
+      <div class="word-phonetic">/laɪn ˈseɡmənt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "line segment", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">measure the line segment</div>
+  <div class="meaning-text">线段（直线上两点之间的部分，有两个端点，可测量长度）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">有两个端点的、可测量的部分，区别于无限长的直线。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      手搓KT板航模时，裁切的每一条实体边都是 line segment，可以直接用尺子测量长度。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">ray</div>
+      <div class="word-phonetic">/reɪ/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "ray", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a ray of light</div>
+  <div class="meaning-text">射线（只有一个端点，向另一端无限延伸的线）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">有一个端点并向一个方向无限延伸。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      模拟从机头向正前方发出的 ray，用来对齐机头指向与风向，确保起飞方向正确。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">endpoint</div>
+      <div class="word-phonetic">/ˈendpɔɪnt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "endpoint", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">the endpoint of a segment</div>
+  <div class="meaning-text">端点（线段或射线的起点或终点）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">线段或射线的起始或终止位置。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼肋板的两端各有一个 endpoint，是蒙皮粘接和热缩膜包覆时必须精确定位的关键点。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">parallel</div>
+      <div class="word-phonetic">/ˈpærəlel/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "parallel", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">parallel lines never meet</div>
+  <div class="meaning-text">平行（同一平面内永不相交的两条直线）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">同一平面内，永不相交的两条直线。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      双翼机的上下机翼必须绝对 parallel，若出现夹角会导致两侧升力不均，引发滚转失控。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">perpendicular</div>
+      <div class="word-phonetic">/ˌpɜːpənˈdɪkjələr/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "perpendicular", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">perpendicular to the ground</div>
+  <div class="meaning-text">垂直（两条直线相交成90°直角）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">两条直线相交且夹角为90度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      垂直尾翼与水平尾翼通常互相 perpendicular，构成稳定的十字形布局，保证航向稳定性。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第二阶段：角</span>
+      <span class="stage-sub">Angles</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">angle</div>
+      <div class="word-phonetic">/ˈæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "angle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">an acute angle</div>
+  <div class="meaning-text">角（由同一点出发的两条射线组成的几何图形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">几何的核心要素之一，描述两条线之间的张开程度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼安装角、上反角、尾翼夹角等所有与飞行姿态相关的参数本质上都以 angle 描述。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">vertex</div>
+      <div class="word-phonetic">/ˈvɜːteks/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "vertex", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">the vertex of an angle</div>
+  <div class="meaning-text">顶点（角的两条边相交的公共端点，复数vertices）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">角的两条边相交的点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼前缘的 vertex 是气动焦点所在，所有升力计算都围绕这个关键顶点展开。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">degree</div>
+      <div class="word-phonetic">/dɪˈɡriː/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "degree", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a 90-degree angle</div>
+  <div class="meaning-text">度（角的计量单位，符号为°）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">角度的计量单位，一个圆周为360度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      遥控舵面偏转以 degree 精确控制，如副翼偏转15°产生标准坡度转弯，差1°就可能偏离航线。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">acute angle</div>
+      <div class="word-phonetic">/əˈkjuːt ˈæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "acute angle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">less than 90 degrees</div>
+  <div class="meaning-text">锐角（小于90°的角）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小于90度的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      V型尾翼的夹角通常为 acute angle（约110°分开后每个角约35°），影响纵向和航向稳定性的平衡。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">right angle</div>
+      <div class="word-phonetic">/raɪt ˈæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "right angle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a perfect right angle</div>
+  <div class="meaning-text">直角（恰好等于90°的角）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">等于90度的角，几何中最特殊的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机身侧板与底板的连接处理想情况下是 right angle，确保机身横截面为标准矩形，左右对称。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">obtuse angle</div>
+      <div class="word-phonetic">/əbˈtjuːs ˈæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "obtuse angle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">greater than 90 degrees</div>
+  <div class="meaning-text">钝角（大于90°且小于180°的角）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">大于90度小于180度的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      后掠翼的翼根与翼尖连线常形成 obtuse angle（如110°），用于降低跨音速阻力。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">protractor</div>
+      <div class="word-phonetic">/prəˈtræktər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "protractor", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">use a protractor to measure</div>
+  <div class="meaning-text">量角器（测量和画角的工具）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">测量角度的专用工具。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      手搓航模时，用 protractor 现场测量机翼上反角（dihedral angle）是否达到设计的3°~5°，保证横滚稳定性。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第三阶段：周长与面积</span>
+      <span class="stage-sub">Perimeter &amp; Area</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">perimeter</div>
+      <div class="word-phonetic">/pəˈrɪmɪtər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "perimeter", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">calculate the perimeter</div>
+  <div class="meaning-text">周长（封闭图形边界一周的总长度）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">一个封闭图形所有边的总长度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      制作机身封边条时，先计算机身截面 perimeter，确保封边条长度刚好足够，避免浪费或短缺。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">area</div>
+      <div class="word-phonetic">/ˈeəriə/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "area", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">the area of a rectangle</div>
+  <div class="meaning-text">面积（平面图形所占据的表面大小）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">一个平面表面所覆盖的空间大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼 area 直接决定升力大小（升力 = 升力系数 × 动压 × area），是航模设计的首要参数。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">unit square</div>
+      <div class="word-phonetic">/ˈjuːnɪt skweər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "unit square", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">area measured in unit squares</div>
+  <div class="meaning-text">单位正方形（边长为1个单位长度、面积为1个面积单位的正方形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">面积概念的基础计量单元，如1平方厘米。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      用 unit square（如1cm²）覆盖机翼图纸，通过数格子快速估算小面积翼型的近似面积。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第四阶段：2D平面多边形</span>
+      <span class="stage-sub">Quadrilaterals &amp; Polygons</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">polygon</div>
+      <div class="word-phonetic">/ˈpɒlɪɡɒn/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "polygon", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a regular polygon</div>
+  <div class="meaning-text">多边形（由三条或三条以上线段首尾顺次连接围成的封闭图形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">由线段围成的封闭图形，按边数分为三角形、四边形等。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模机身横截面常为 polygon（如六边形或八边形），在强度和轻量化之间取得平衡。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">triangle</div>
+      <div class="word-phonetic">/ˈtraɪæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "triangle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">an equilateral triangle</div>
+  <div class="meaning-text">三角形（由三条线段围成的封闭图形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">工程上最稳固的拓扑结构，最基础的多边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模起落架、机身加强筋常采用 triangle 结构（桁架），利用其几何稳定性抵抗着陆冲击力。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">quadrilateral</div>
+      <div class="word-phonetic">/ˌkwɒdrɪˈlætərəl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "quadrilateral", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">any four-sided quadrilateral</div>
+  <div class="meaning-text">四边形（由四条线段围成的封闭图形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">所有具有四条边的多边形的总称。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼平面形状本质上是 quadrilateral（四边形），无论矩形翼、梯形翼还是后掠翼都归属此类。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">rectangle</div>
+      <div class="word-phonetic">/ˈrektæŋɡl/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "rectangle", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">a rectangle with length L</div>
+  <div class="meaning-text">长方形 / 矩形（四个角都是直角的四边形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">对边平行且相等、四个角为直角的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      矩形机翼是最简单的航模翼型，易于计算面积和制作，适合初学者手搓练习。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">square</div>
+      <div class="word-phonetic">/skweər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "square", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 三年级</span>
+  </div>
+  <div class="phrase-text">a perfect square</div>
+  <div class="meaning-text">正方形（四条边都相等且四个角都是直角的四边形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">特殊的长方形，四边相等。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      正方形的机身隔框（square frame）制作最简单，只需保证四边等长和四角垂直。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">parallelogram</div>
+      <div class="word-phonetic">/ˌpærəˈleləɡræm/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "parallelogram", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">opposite sides are parallel</div>
+  <div class="meaning-text">平行四边形（两组对边分别平行的四边形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">对边平行且相等的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      某些后掠不严重的机翼可近似看作 parallelogram，利用公式面积=底×高快速计算机翼面积。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">rhombus</div>
+      <div class="word-phonetic">/ˈrɒmbəs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "rhombus", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">a rhombus with equal sides</div>
+  <div class="meaning-text">菱形（四条边都相等的平行四边形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四边相等的特殊平行四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      菱形翼（rhombus wing）在特种航模中偶尔使用，四边等长便于对称加工和平衡配重。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">trapezoid</div>
+      <div class="word-phonetic">/ˈtræpɪzɔɪd/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "trapezoid", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">an isosceles trapezoid</div>
+  <div class="meaning-text">梯形（只有一组对边平行的四边形）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">只有一组对边平行的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      运输机和客机机翼最经典的外形就是 trapezoid（梯形翼），兼顾升力分布和结构强度。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第五阶段：度量衡与物理输出</span>
+      <span class="stage-sub">Perimeter, Area, Volume</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">dimension</div>
+      <div class="word-phonetic">/dɪˈmenʃən/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "dimension", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级/五年级</span>
+  </div>
+  <div class="phrase-text">the three dimensions of space</div>
+  <div class="meaning-text">维度 / 尺寸 / 边长（物体在空间中的度量参数）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">描述物体大小的基本参数，如长、宽、高。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      每个零件图纸上都标注了完整的 dimension（长×宽×高），任何一维误差都会导致装配失败。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">base</div>
+      <div class="word-phonetic">/beɪs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "base", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级/五年级</span>
+  </div>
+  <div class="phrase-text">the base of a triangle</div>
+  <div class="meaning-text">底边 / 底面（几何图形中作为基准参考的边或面）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">计算面积或体积时作为基准的边/面。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机翼面积时，通常以翼根弦长为 base，再乘以半翼展和高，得到梯形机翼面积。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">height</div>
+      <div class="word-phonetic">/haɪt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "height", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 四年级</span>
+  </div>
+  <div class="phrase-text">the height of a building</div>
+  <div class="meaning-text">高（几何图形中从底边到对顶点的垂直距离）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">垂直方向上的长度，与底边对应。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼的 thickness height（翼型最大厚度）决定其强度，而尾翼的 vertical height 影响航向稳定力矩。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">radius</div>
+      <div class="word-phonetic">/ˈreɪdiəs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "radius", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 六年级</span>
+  </div>
+  <div class="phrase-text">the radius of a circle</div>
+  <div class="meaning-text">半径（圆心到圆周上任意一点的距离）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">圆的基本参数之一，决定圆的大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      螺旋桨的旋转半径、轮子半径、电机外壳半径等都以 radius 标注，是选购零件的关键参数。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">diameter</div>
+      <div class="word-phonetic">/daɪˈæmɪtər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "diameter", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 六年级</span>
+  </div>
+  <div class="phrase-text">twice the radius</div>
+  <div class="meaning-text">直径（通过圆心连接圆周上两点的线段，等于2倍半径）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">圆的基本参数之一，diameter = 2 × radius。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      购买微型马达和螺旋桨时，diameter 是最核心的工业参数，如&quot;8寸桨&quot;指直径8英寸。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">volume</div>
+      <div class="word-phonetic">/ˈvɒljuːm/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "volume", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">the volume of a box</div>
+  <div class="meaning-text">体积（物体所占空间的大小）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">三维空间内物体占据的大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模货舱或电池舱的 volume 决定了能塞下多大容量的电池（直接影响续航）或多重的配重。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">surface area</div>
+      <div class="word-phonetic">/ˈsɜːfɪs ˈeəriə/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "surface area", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 五年级</span>
+  </div>
+  <div class="phrase-text">total surface area</div>
+  <div class="meaning-text">表面积（立体图形所有表面的面积之和）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">立体图形外表面的总面积。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机身蒙皮面积或涂装面积时需要 surface area，直接决定需要购买多少面积的蒙皮或油漆。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第六阶段：空间坐标定位</span>
+      <span class="stage-sub">Coordinate Plane</span>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">coordinate plane</div>
+      <div class="word-phonetic">/kəʊˈɔːdɪneɪt pleɪn/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "coordinate plane", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">plot on the coordinate plane</div>
+  <div class="meaning-text">坐标平面 / 直角坐标系（由两条互相垂直的数轴构成的平面）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">用有序数对确定平面上点的位置。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在CAD软件中，整个航模的三维模型基于 coordinate plane 建立，每个零件都有精确的坐标定位。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">axis (X-axis / Y-axis)</div>
+      <div class="word-phonetic">/ˈæksɪs/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "axis (X-axis / Y-axis)", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">the horizontal X-axis</div>
+  <div class="meaning-text">坐标轴（坐标系中的基准直线，X轴水平，Y轴垂直）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标系的基准线，X轴水平向右，Y轴垂直向上。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在激光切割机定位时，X-axis 控制左右移动，Y-axis 控制前后移动，是数控加工的基础。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">origin</div>
+      <div class="word-phonetic">/ˈɒrɪdʒɪn/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "origin", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">start from the origin</div>
+  <div class="meaning-text">原点（坐标系中X轴与Y轴的交点，坐标为(0,0)）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标系的基准点，所有坐标的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模图纸通常以机头尖端或重心为 origin(0,0)，所有零件位置都相对该点标注坐标。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">ordered pair</div>
+      <div class="word-phonetic">/ˈɔːdəd peər/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "ordered pair", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">write as an ordered pair (x, y)</div>
+  <div class="meaning-text">坐标对 / 有序数对（按固定顺序写出的一对数，如(3,5)）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">确定平面内一点位置的数对，顺序不可颠倒。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机身上每个电机、舵机、传感器的安装位置都用 ordered pair 标在图纸上，如&quot;副翼舵机(120, 45)&quot;。
+    </div>
+  </div>
+</div><div class="word-card geometry" onclick="toggleCard(this)">
+  <div class="card-top">
+    <div>
+      <div class="word-main">quadrant</div>
+      <div class="word-phonetic">/ˈkwɒdrənt/</div>
+    </div>
+    <button class="btn-speak" onclick='speakWord(event, "quadrant", this)' title="朗读">🔊</button>
+  </div>
+  <div class="tag-row">
+    <span class="tag course-geo">Geometry</span>
+    <span class="tag grade">人教版 · 七年级</span>
+  </div>
+  <div class="phrase-text">in the first quadrant</div>
+  <div class="meaning-text">象限（坐标平面被两轴分成的四个区域）</div>
+  <div class="expand-hint">点击查看教学语境与航模应用 ▼</div>
+  <div class="card-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标平面被X轴、Y轴分成四个部分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      设计左右对称机翼时，右机翼位于第一 quadrant，左机翼位于第二 quadrant，利用对称性简化设计。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+    </div>
+    <div class="view-list-content" style="display:none">
+      <div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第一阶段：几何基础元素</span>
+      <span class="stage-sub">Foundations</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">point</div>
+  <div class="list-phonetic">/pɔɪnt/</div>
+  <div class="list-phrase">a fixed point on the plane</div>
+  <div class="list-meaning">点（几何中最基本的元素，没有大小，只有位置）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "point", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">没有大小的精确位置，是所有几何图形的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在CAD图纸上，每一个 point 代表一个关键定位点，如机翼前缘与机身的连接点。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">line</div>
+  <div class="list-phonetic">/laɪn/</div>
+  <div class="list-phrase">draw a straight line</div>
+  <div class="list-meaning">直线（向两端无限延伸的、没有宽度和厚度的一维图形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "line", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">无限延伸的点的集合，没有端点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼的理论基准线（如1/4弦线）是一条无限延伸的 line，用于分析整机的气动特性。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">line segment</div>
+  <div class="list-phonetic">/laɪn ˈseɡmənt/</div>
+  <div class="list-phrase">measure the line segment</div>
+  <div class="list-meaning">线段（直线上两点之间的部分，有两个端点，可测量长度）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "line segment", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">有两个端点的、可测量的部分，区别于无限长的直线。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      手搓KT板航模时，裁切的每一条实体边都是 line segment，可以直接用尺子测量长度。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">ray</div>
+  <div class="list-phonetic">/reɪ/</div>
+  <div class="list-phrase">a ray of light</div>
+  <div class="list-meaning">射线（只有一个端点，向另一端无限延伸的线）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "ray", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">有一个端点并向一个方向无限延伸。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      模拟从机头向正前方发出的 ray，用来对齐机头指向与风向，确保起飞方向正确。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">endpoint</div>
+  <div class="list-phonetic">/ˈendpɔɪnt/</div>
+  <div class="list-phrase">the endpoint of a segment</div>
+  <div class="list-meaning">端点（线段或射线的起点或终点）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "endpoint", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">线段或射线的起始或终止位置。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼肋板的两端各有一个 endpoint，是蒙皮粘接和热缩膜包覆时必须精确定位的关键点。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">parallel</div>
+  <div class="list-phonetic">/ˈpærəlel/</div>
+  <div class="list-phrase">parallel lines never meet</div>
+  <div class="list-meaning">平行（同一平面内永不相交的两条直线）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "parallel", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">同一平面内，永不相交的两条直线。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      双翼机的上下机翼必须绝对 parallel，若出现夹角会导致两侧升力不均，引发滚转失控。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">perpendicular</div>
+  <div class="list-phonetic">/ˌpɜːpənˈdɪkjələr/</div>
+  <div class="list-phrase">perpendicular to the ground</div>
+  <div class="list-meaning">垂直（两条直线相交成90°直角）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "perpendicular", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">两条直线相交且夹角为90度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      垂直尾翼与水平尾翼通常互相 perpendicular，构成稳定的十字形布局，保证航向稳定性。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第二阶段：角</span>
+      <span class="stage-sub">Angles</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">angle</div>
+  <div class="list-phonetic">/ˈæŋɡl/</div>
+  <div class="list-phrase">an acute angle</div>
+  <div class="list-meaning">角（由同一点出发的两条射线组成的几何图形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "angle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">几何的核心要素之一，描述两条线之间的张开程度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼安装角、上反角、尾翼夹角等所有与飞行姿态相关的参数本质上都以 angle 描述。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">vertex</div>
+  <div class="list-phonetic">/ˈvɜːteks/</div>
+  <div class="list-phrase">the vertex of an angle</div>
+  <div class="list-meaning">顶点（角的两条边相交的公共端点，复数vertices）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "vertex", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">角的两条边相交的点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼前缘的 vertex 是气动焦点所在，所有升力计算都围绕这个关键顶点展开。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">degree</div>
+  <div class="list-phonetic">/dɪˈɡriː/</div>
+  <div class="list-phrase">a 90-degree angle</div>
+  <div class="list-meaning">度（角的计量单位，符号为°）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "degree", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">角度的计量单位，一个圆周为360度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      遥控舵面偏转以 degree 精确控制，如副翼偏转15°产生标准坡度转弯，差1°就可能偏离航线。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">acute angle</div>
+  <div class="list-phonetic">/əˈkjuːt ˈæŋɡl/</div>
+  <div class="list-phrase">less than 90 degrees</div>
+  <div class="list-meaning">锐角（小于90°的角）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "acute angle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">小于90度的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      V型尾翼的夹角通常为 acute angle（约110°分开后每个角约35°），影响纵向和航向稳定性的平衡。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">right angle</div>
+  <div class="list-phonetic">/raɪt ˈæŋɡl/</div>
+  <div class="list-phrase">a perfect right angle</div>
+  <div class="list-meaning">直角（恰好等于90°的角）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "right angle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">等于90度的角，几何中最特殊的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机身侧板与底板的连接处理想情况下是 right angle，确保机身横截面为标准矩形，左右对称。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">obtuse angle</div>
+  <div class="list-phonetic">/əbˈtjuːs ˈæŋɡl/</div>
+  <div class="list-phrase">greater than 90 degrees</div>
+  <div class="list-meaning">钝角（大于90°且小于180°的角）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "obtuse angle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">大于90度小于180度的角。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      后掠翼的翼根与翼尖连线常形成 obtuse angle（如110°），用于降低跨音速阻力。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">protractor</div>
+  <div class="list-phonetic">/prəˈtræktər/</div>
+  <div class="list-phrase">use a protractor to measure</div>
+  <div class="list-meaning">量角器（测量和画角的工具）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "protractor", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">测量角度的专用工具。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      手搓航模时，用 protractor 现场测量机翼上反角（dihedral angle）是否达到设计的3°~5°，保证横滚稳定性。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第三阶段：周长与面积</span>
+      <span class="stage-sub">Perimeter &amp; Area</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">perimeter</div>
+  <div class="list-phonetic">/pəˈrɪmɪtər/</div>
+  <div class="list-phrase">calculate the perimeter</div>
+  <div class="list-meaning">周长（封闭图形边界一周的总长度）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "perimeter", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">一个封闭图形所有边的总长度。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      制作机身封边条时，先计算机身截面 perimeter，确保封边条长度刚好足够，避免浪费或短缺。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">area</div>
+  <div class="list-phonetic">/ˈeəriə/</div>
+  <div class="list-phrase">the area of a rectangle</div>
+  <div class="list-meaning">面积（平面图形所占据的表面大小）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "area", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">一个平面表面所覆盖的空间大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼 area 直接决定升力大小（升力 = 升力系数 × 动压 × area），是航模设计的首要参数。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">unit square</div>
+  <div class="list-phonetic">/ˈjuːnɪt skweər/</div>
+  <div class="list-phrase">area measured in unit squares</div>
+  <div class="list-meaning">单位正方形（边长为1个单位长度、面积为1个面积单位的正方形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "unit square", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">面积概念的基础计量单元，如1平方厘米。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      用 unit square（如1cm²）覆盖机翼图纸，通过数格子快速估算小面积翼型的近似面积。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第四阶段：2D平面多边形</span>
+      <span class="stage-sub">Quadrilaterals &amp; Polygons</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">polygon</div>
+  <div class="list-phonetic">/ˈpɒlɪɡɒn/</div>
+  <div class="list-phrase">a regular polygon</div>
+  <div class="list-meaning">多边形（由三条或三条以上线段首尾顺次连接围成的封闭图形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "polygon", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">由线段围成的封闭图形，按边数分为三角形、四边形等。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模机身横截面常为 polygon（如六边形或八边形），在强度和轻量化之间取得平衡。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">triangle</div>
+  <div class="list-phonetic">/ˈtraɪæŋɡl/</div>
+  <div class="list-phrase">an equilateral triangle</div>
+  <div class="list-meaning">三角形（由三条线段围成的封闭图形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "triangle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">工程上最稳固的拓扑结构，最基础的多边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模起落架、机身加强筋常采用 triangle 结构（桁架），利用其几何稳定性抵抗着陆冲击力。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">quadrilateral</div>
+  <div class="list-phonetic">/ˌkwɒdrɪˈlætərəl/</div>
+  <div class="list-phrase">any four-sided quadrilateral</div>
+  <div class="list-meaning">四边形（由四条线段围成的封闭图形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "quadrilateral", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">所有具有四条边的多边形的总称。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼平面形状本质上是 quadrilateral（四边形），无论矩形翼、梯形翼还是后掠翼都归属此类。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">rectangle</div>
+  <div class="list-phonetic">/ˈrektæŋɡl/</div>
+  <div class="list-phrase">a rectangle with length L</div>
+  <div class="list-meaning">长方形 / 矩形（四个角都是直角的四边形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "rectangle", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">对边平行且相等、四个角为直角的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      矩形机翼是最简单的航模翼型，易于计算面积和制作，适合初学者手搓练习。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">square</div>
+  <div class="list-phonetic">/skweər/</div>
+  <div class="list-phrase">a perfect square</div>
+  <div class="list-meaning">正方形（四条边都相等且四个角都是直角的四边形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 三年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "square", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">特殊的长方形，四边相等。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      正方形的机身隔框（square frame）制作最简单，只需保证四边等长和四角垂直。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">parallelogram</div>
+  <div class="list-phonetic">/ˌpærəˈleləɡræm/</div>
+  <div class="list-phrase">opposite sides are parallel</div>
+  <div class="list-meaning">平行四边形（两组对边分别平行的四边形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "parallelogram", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">对边平行且相等的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      某些后掠不严重的机翼可近似看作 parallelogram，利用公式面积=底×高快速计算机翼面积。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">rhombus</div>
+  <div class="list-phonetic">/ˈrɒmbəs/</div>
+  <div class="list-phrase">a rhombus with equal sides</div>
+  <div class="list-meaning">菱形（四条边都相等的平行四边形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "rhombus", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">四边相等的特殊平行四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      菱形翼（rhombus wing）在特种航模中偶尔使用，四边等长便于对称加工和平衡配重。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">trapezoid</div>
+  <div class="list-phonetic">/ˈtræpɪzɔɪd/</div>
+  <div class="list-phrase">an isosceles trapezoid</div>
+  <div class="list-meaning">梯形（只有一组对边平行的四边形）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "trapezoid", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">只有一组对边平行的四边形。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      运输机和客机机翼最经典的外形就是 trapezoid（梯形翼），兼顾升力分布和结构强度。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第五阶段：度量衡与物理输出</span>
+      <span class="stage-sub">Perimeter, Area, Volume</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">dimension</div>
+  <div class="list-phonetic">/dɪˈmenʃən/</div>
+  <div class="list-phrase">the three dimensions of space</div>
+  <div class="list-meaning">维度 / 尺寸 / 边长（物体在空间中的度量参数）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级/五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "dimension", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">描述物体大小的基本参数，如长、宽、高。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      每个零件图纸上都标注了完整的 dimension（长×宽×高），任何一维误差都会导致装配失败。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">base</div>
+  <div class="list-phonetic">/beɪs/</div>
+  <div class="list-phrase">the base of a triangle</div>
+  <div class="list-meaning">底边 / 底面（几何图形中作为基准参考的边或面）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级/五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "base", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">计算面积或体积时作为基准的边/面。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机翼面积时，通常以翼根弦长为 base，再乘以半翼展和高，得到梯形机翼面积。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">height</div>
+  <div class="list-phonetic">/haɪt/</div>
+  <div class="list-phrase">the height of a building</div>
+  <div class="list-meaning">高（几何图形中从底边到对顶点的垂直距离）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 四年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "height", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">垂直方向上的长度，与底边对应。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机翼的 thickness height（翼型最大厚度）决定其强度，而尾翼的 vertical height 影响航向稳定力矩。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">radius</div>
+  <div class="list-phonetic">/ˈreɪdiəs/</div>
+  <div class="list-phrase">the radius of a circle</div>
+  <div class="list-meaning">半径（圆心到圆周上任意一点的距离）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 六年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "radius", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">圆的基本参数之一，决定圆的大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      螺旋桨的旋转半径、轮子半径、电机外壳半径等都以 radius 标注，是选购零件的关键参数。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">diameter</div>
+  <div class="list-phonetic">/daɪˈæmɪtər/</div>
+  <div class="list-phrase">twice the radius</div>
+  <div class="list-meaning">直径（通过圆心连接圆周上两点的线段，等于2倍半径）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 六年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "diameter", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">圆的基本参数之一，diameter = 2 × radius。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      购买微型马达和螺旋桨时，diameter 是最核心的工业参数，如&quot;8寸桨&quot;指直径8英寸。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">volume</div>
+  <div class="list-phonetic">/ˈvɒljuːm/</div>
+  <div class="list-phrase">the volume of a box</div>
+  <div class="list-meaning">体积（物体所占空间的大小）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "volume", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">三维空间内物体占据的大小。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模货舱或电池舱的 volume 决定了能塞下多大容量的电池（直接影响续航）或多重的配重。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">surface area</div>
+  <div class="list-phonetic">/ˈsɜːfɪs ˈeəriə/</div>
+  <div class="list-phrase">total surface area</div>
+  <div class="list-meaning">表面积（立体图形所有表面的面积之和）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 五年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "surface area", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">立体图形外表面的总面积。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      计算机身蒙皮面积或涂装面积时需要 surface area，直接决定需要购买多少面积的蒙皮或油漆。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<div class="stage geometry">
+  <div class="stage-header">
+    <div class="stage-dot"></div>
+    <div>
+      <span class="stage-title">第六阶段：空间坐标定位</span>
+      <span class="stage-sub">Coordinate Plane</span>
+    </div>
+  </div>
+  <div class="list-table">
+    <div class="list-header">
+      <div>单词</div><div>音标</div><div>短语</div><div>中文释义</div><div>学段</div><div></div>
+    </div>
+    <div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">coordinate plane</div>
+  <div class="list-phonetic">/kəʊˈɔːdɪneɪt pleɪn/</div>
+  <div class="list-phrase">plot on the coordinate plane</div>
+  <div class="list-meaning">坐标平面 / 直角坐标系（由两条互相垂直的数轴构成的平面）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "coordinate plane", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">用有序数对确定平面上点的位置。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在CAD软件中，整个航模的三维模型基于 coordinate plane 建立，每个零件都有精确的坐标定位。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">axis (X-axis / Y-axis)</div>
+  <div class="list-phonetic">/ˈæksɪs/</div>
+  <div class="list-phrase">the horizontal X-axis</div>
+  <div class="list-meaning">坐标轴（坐标系中的基准直线，X轴水平，Y轴垂直）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "axis (X-axis / Y-axis)", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标系的基准线，X轴水平向右，Y轴垂直向上。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      在激光切割机定位时，X-axis 控制左右移动，Y-axis 控制前后移动，是数控加工的基础。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">origin</div>
+  <div class="list-phonetic">/ˈɒrɪdʒɪn/</div>
+  <div class="list-phrase">start from the origin</div>
+  <div class="list-meaning">原点（坐标系中X轴与Y轴的交点，坐标为(0,0)）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "origin", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标系的基准点，所有坐标的起点。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      航模图纸通常以机头尖端或重心为 origin(0,0)，所有零件位置都相对该点标注坐标。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">ordered pair</div>
+  <div class="list-phonetic">/ˈɔːdəd peər/</div>
+  <div class="list-phrase">write as an ordered pair (x, y)</div>
+  <div class="list-meaning">坐标对 / 有序数对（按固定顺序写出的一对数，如(3,5)）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "ordered pair", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">确定平面内一点位置的数对，顺序不可颠倒。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      机身上每个电机、舵机、传感器的安装位置都用 ordered pair 标在图纸上，如&quot;副翼舵机(120, 45)&quot;。
+    </div>
+  </div>
+</div><div class="list-row geometry" onclick="toggleListRow(this)">
+  <div class="list-word">quadrant</div>
+  <div class="list-phonetic">/ˈkwɒdrənt/</div>
+  <div class="list-phrase">in the first quadrant</div>
+  <div class="list-meaning">象限（坐标平面被两轴分成的四个区域）</div>
+  <div class="list-grade"><span class="tag grade">人教版 · 七年级</span></div>
+  <div><button class="list-speak" onclick='speakWord(event, "quadrant", this)' title="朗读">🔊</button></div>
+  <div class="list-details" onclick="event.stopPropagation()">
+    <div class="section-title">教学语境</div>
+    <div class="section-text">坐标平面被X轴、Y轴分成四个部分。</div>
+    <div class="aviation-box">
+      <strong>航模应用</strong>
+      设计左右对称机翼时，右机翼位于第一 quadrant，左机翼位于第二 quadrant，利用对称性简化设计。
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+    </div>
+  </div>
+</div>
+
+<footer>English for Planes · 用英语学数学，用手搓懂航模 🛩️</footer>
+
+<script>
+let currentView = 'card';
+let currentTab = 'arithmetic';
+
+function switchTab(id) {
+  currentTab = id;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.tab-btn.' + id).classList.add('active');
+  document.querySelectorAll('.course-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+function setView(view) {
+  currentView = view;
+  document.getElementById('btn-card').classList.toggle('active', view === 'card');
+  document.getElementById('btn-list').classList.toggle('active', view === 'list');
+  document.querySelectorAll('.course-panel').forEach(p => {
+    p.classList.remove('view-card', 'view-list');
+    p.classList.add('view-' + view);
+    p.querySelector('.view-card-content').style.display = view === 'card' ? '' : 'none';
+    p.querySelector('.view-list-content').style.display = view === 'list' ? '' : 'none';
+  });
+}
+
+function toggleCard(card) {
+  card.classList.toggle('expanded');
+}
+function toggleListRow(row) {
+  const wasExpanded = row.classList.contains('expanded');
+  if (!wasExpanded) row.classList.add('expanded');
+  else row.classList.remove('expanded');
+}
+
+let _voices = [];
+function getVoices() {
+  if (!window.speechSynthesis) return [];
+  _voices = window.speechSynthesis.getVoices();
+  return _voices;
+}
+function pickEnVoice() {
+  const voices = getVoices();
+  return voices.find(v => v.lang && (v.lang.startsWith('en-US') || v.lang.startsWith('en_GB') || v.lang.startsWith('en'))) || voices[0] || null;
+}
+
+function speakWord(event, text, btn) {
+  event.stopPropagation();
+  if (!window.speechSynthesis) { alert('您的设备不支持语音朗读'); return; }
+  // iOS Safari fix: resume on user gesture
+  if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); }
+  const cleanText = text.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+  const utter = new SpeechSynthesisUtterance(cleanText);
+  const v = pickEnVoice();
+  if (v) utter.voice = v;
+  utter.lang = 'en-US';
+  utter.rate = 0.85;
+  utter.pitch = 1.0;
+  btn.classList.add('speaking');
+  utter.onend = () => btn.classList.remove('speaking');
+  utter.onerror = (e) => { console.error('Speech error:', e.error); btn.classList.remove('speaking'); };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+// Pre-load voices (some browsers load them asynchronously)
+if (window.speechSynthesis) {
+  getVoices();
+  window.speechSynthesis.onvoiceschanged = function() { getVoices(); };
+  // iOS activation hack: speak an empty utterance to unlock the engine
+  try { window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch(e) {}
+}
+
+// Apply accent colors
+function applyAccents() {
+  document.querySelectorAll('.word-card.arithmetic, .list-row.arithmetic').forEach(c => {
+    c.style.setProperty('--card-accent', 'var(--primary)');
+    c.style.setProperty('--card-accent-light', 'var(--primary-light)');
+  });
+  document.querySelectorAll('.word-card.geometry, .list-row.geometry').forEach(c => {
+    c.style.setProperty('--card-accent', 'var(--accent-geo)');
+    c.style.setProperty('--card-accent-light', 'var(--accent-geo-light)');
+  });
+}
+applyAccents();
+</script>
+
+</body>
+</html>
